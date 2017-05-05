@@ -67,8 +67,9 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
 	放置位置：	和appendersh,loggers 元素放在同一等级上。。作用：记录事件传递到LoggerConfig之前接受或拒绝事件
 						logger 元素中，作用是这些配置过的记录器可以接受或者拒绝来自指定loggers的记录事件（什么鬼）
 						appender 中，作用是拒绝或者接受打印指定级别的记录事件
-						
-	
+9:标记，记录器可以使用不同的Markers来区分不同的记录。
+10:日志输出乱码咋办，在目的地配置设置编码，如：									
+	<PatternLayout charset="GBK" pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
 	
 	接下来是什么鬼的log4j架构介绍
 	获取一个Logger 时，LogManager会找到对应的LoggerContext对象，然后获取Logger
