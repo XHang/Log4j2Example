@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="WARN"  xsd:schemaLocation="log4j-config.xsd">
+	<Properties>
+		<Property ></Property>
+	
+	
+	</Properties>
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">	
-      <PatternLayout charset="GBK" pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+      <PatternLayout charset="utf-8" pattern="%r [%t] %-5p %c - %m%n"/>
     </Console>
   </Appenders>
   <Loggers>
-  	<Logger  name="com.QuickStart.Example.QuickStartLog" level="info" additivity="false">
-  		 <AppenderRef ref ="Console" /> 
+  	<Logger name="com.QuickStart"   level="info"   additivity="false">
+  		<AppenderRef ref="Console"/>
   	</Logger>
-    <Root level="DEBUG">
+    <Root level="info">
       <AppenderRef ref="Console"/>
     </Root>
   </Loggers>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="TRACE"  dest="hahaha.log" append="true">
+<Configuration status="TRACE"  dest="hahaha.log" append="true"  xsd:schemaLocation="	">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
     	<!-- 给目的地一层过滤，如果目的地接受到的是TRACE等级的信息，就允许输出，如果不是，拒绝打印-->
