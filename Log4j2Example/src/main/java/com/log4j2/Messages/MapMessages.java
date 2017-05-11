@@ -8,7 +8,7 @@ import org.apache.logging.log4j.message.Message;
 
 public class MapMessages implements  Message  {
 	/**
-	 * 
+	 *  
 	 */
 	private static final long serialVersionUID = 5261751284357622424L;
 	private Map<String,String> map;

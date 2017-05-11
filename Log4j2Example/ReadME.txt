@@ -178,8 +178,22 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
     22：通过变量来替换掉xml里面的变量。
     	就是把xml你觉得可以变的配置用变量替代，方便修改。
     	怎么做？
-    	在根元素写一个Properties标签，里面追加
-    	一些属性：
+    	能亮代码就别瞎比比
+    	<Properties>
+				<Property  name="pattern">哈哈  %r [%t] %-5p %c - %m%n</Property>
+		</Properties>
+		如上，想用动态属性时就酱紫
+		 <PatternLayout charset="utf-8" pattern="${pattern}"/>
+		 完美替代
+		 另外，log4j2的配置文件自带了两个变量，你不用设置就能用
+		 一个是${log4j:configLocation}  引用的是log4j2输出配置文件的绝对路径，带文件名的，默认就是tarage的classs文件
+		 一个是${log4j:configParentLocation} 引用的是log4j2的配置文件的输出路径的绝对路径
+		 虽然这个路径是不带文件名的，但是这个路径是输出路径，不是你放log4j2的配置文件的那个文件夹。
+		 默认这个情况下，这个文件夹是编译生成的targe文件夹里面的class。
+		 ${date:YYYY}  这个也是不用设置也能用，引用的是当前的时间，带格式化的。
+		 $(env:系统环境变量名}  这个引用的就是系统环境变量。啥，什么叫系统环境变量？就是安装jdk时设置的JAVA_HOME。那就是环境变量
+		 $(sys:属性名}   引用的就是系统属性，通过System.getProperties();可以获取当前系统的所有属性。
+		 
     23:过滤器，之前好像讲过了，但是讲的只是利用信息等级来进行信息的过滤。其实还有一种，就是利用第9点所说的标记来进行信息过滤
     大概配置是酱紫的：
     <filters>
@@ -187,6 +201,94 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
         <MarkerFilter marker="EXCEPTION" onMatch="ACCEPT" onMismatch="DENY"/>
      </filters>
      24：目的地配置中的Routing 目的地配置
-     
+     25:脚本标签
+     log4j2支持在部分组件中使用JSR 223脚本语言。
+     比如说对于JavaScript，Groovy ，Beanshell这些脚本语言，都是直接支持的，并且只要引入该语言的jar就行了
+     支持脚本的组件使用<script>, <scriptFile>, or <scriptRef>标签来完成脚本的配置。
+     <script>元素包含脚本的名称，脚本的语言和脚本文本
+     <scriptFile>元素包含脚本的名称，位置，语言，字符集，以及是否监视脚本文件以动态加载
+     <scriptRef>元素处在<script>元素中，用于定义脚本的名称，名称是用来存储脚本和脚本引擎。
+     脚本名称非必须，但有助于调试时找脚本位置。
+     脚本语言必须在<script>中定义好。
+     如果在<scriptFile>没有定义脚本语言，则会通过文件的后缀名判断是什么脚本语言。
+     如果请求了文件监视，则只会当在Configuration元素中配置了非零的monitorInterval属性才会启用
+     某些脚本文件支持把执行完毕的返回值返回到调用者，也就是java代码上。但是javaScript不支持这么做
+     因为，它不允许使用返回语句，除非是在函数内，折中的做法是，返回在脚本中执行的最后一个语句的值。
+     var result=1;
+      result++；
+      result;
+      调用者将得到result的值。
+      示例小程序
+      <Scripts>
+			    <Script name="selector" language="javascript"><![CDATA[
+			            var result;
+			            if (logEvent.getLoggerName().equals("JavascriptNoLocation")) {
+			                result = "NoLocation";
+			            } else if (logEvent.getMarker() != null && logEvent.getMarker().isInstanceOf("FLOW")) {
+			                result = "Flow";
+			            }
+			            result;
+			            ]]>
+			      </Script>
+    <ScriptFile name="groovy.filter" path="scripts/filter.groovy"/></Scripts>
+    由于所需jar包找不到，所以本示例程序暂停
+    
+    26：log4j2配置引入其他配置文件。
+    		如果你觉得一个log4j2的配置文件很繁多，可以把一些配置提出来，写在单独的一个xml文件，配置文件只要引入xml文件即可。
+    		eg：
+    		这是一个log4j-xinclude-appenders.xml文件
+    		<?xml version="1.0" encoding="UTF-8"?>
+			<appenders>
+			  <Console name="STDOUT">
+			    <PatternLayout pattern="%m%n" />
+			  </Console>
+			  <File name="File" fileName="${filename}" bufferedIO="true" immediateFlush="true">
+			    <PatternLayout>
+			      <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+			    </PatternLayout>
+			  </File>
+			</appenders>
+      		引入的log配置文件
+      		<?xml version="1.0" encoding="UTF-8"?>
+			<configuration xmlns:xi="http://www.w3.org/2001/XInclude"
+			               status="warn" name="XIncludeDemo">
+			  <properties>
+			    <property name="filename">xinclude-demo.log</property>
+			  </properties>
+			  <ThresholdFilter level="debug"/>
+			  <xi:include href="log4j-xinclude-appenders.xml" />
+			</configuration>
+      		感觉简单的可以，就不写示例程序了。
+      27：web程序使用log4j2
+      			在web程序使用log4j2时，必须非常小心，在容器关闭或者web应用程序取消部署时，都要把资源正确关闭：关闭数据库连接，文件关闭
+      			这是因为web环境的类加载器性质，log无法以正常方式清理资源。
+      			首先，你要加log4j2的web模块依赖.
+      			然后可以选择在web.xml上用log4jConfiguration 指定一个配置文件路径，或者将log4j2的配置文件放到web-inf文件夹内。
+      			但是要注意，文件名必须起为log4j2开头。
+      			PS：log4j2只能工作在servlct3.0或者更加新的web应用程序。当应用部署或者取消部署时都能自动启动
+      			另外：Tomcat7会忽略log4j*.jar的jar文件，从而使日志记录失效。
+      			如果你不幸遇到日志不生效的情况，尝试更改catalina.properties，在jarsToSkip属性中删除“log4j * .jar.
+      			如果你想禁止log4j在web容器启动时自动启动，可以在web.xml做如下配置：
+      			<context-param>
+        			<param-name>isLog4jAutoInitializationDisabled</param-name>
+        			<param-value>true</param-value>
+    			</context-param>
+      
+      
+      
+      
+      
+      其他笔记
+      怎么把经过url编码转换成中文？
+		假设现在通过Socket协议连接时客户还往连接的url地址加一些中文参数，那么怎么在服务端把这些文字解码成中文呢？
+		说来也挺简单的
+		new String(URLDecoder.decode(要转换的字符串, "utf-8")
+		施工完毕
+		
+		1：
+今天写一个webSocket的demo时，发现访问websocket的路径没有问题，但是却报404错误。
+环境是：Eclipse，tomcat7版本是8.0. jdk版本是1.8
+查找了网上的资料后，发现tomcat8其实已经有了webSocket的包。而我还是把webSocket发布到项目的lib中。
+尝试把webSocket从lib路径移除，再尝试，果然成功。
 
 

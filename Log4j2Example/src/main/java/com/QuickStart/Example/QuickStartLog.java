@@ -2,7 +2,8 @@ package com.QuickStart.Example;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Map; 
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.message.MapMessage;
 import org.apache.logging.log4j.spi.LoggerContext;
 
 import com.log4j2.Messages.MapMessages;
+
 
 /**
  * logFj2示例程序
@@ -19,6 +21,7 @@ import com.log4j2.Messages.MapMessages;
 public class QuickStartLog {
 	public static void main(String[] args) {  
 		messagesExample();
+		shouSysProperties();
 	}
 	public static  void example(){
 		//根据记录器名字取得该记录器，如果这句代码执行两遍获取的都是同一个对象，也就是传说中的单例模式
@@ -38,7 +41,7 @@ public class QuickStartLog {
 		logger.debug("Long.MAX_VALUE = %,d", Long.MAX_VALUE);
 	}
 	/**
-	 * 演示log4j2复杂数据类型的输出
+	 * 演示log4j2复杂数据类型的输出 
 	 */
 	public static void messagesExample(){
 		Logger logger=   LogManager.getLogger();
@@ -49,5 +52,11 @@ public class QuickStartLog {
 		map.put("dd", "11");
 		map.put("gg", "11");
 		logger.info(new MapMessage(map));
+	}
+	public  static void shouSysProperties(){
+		Properties pro=System.getProperties();
+		for(Map.Entry<Object,Object>  element:pro.entrySet()){
+			System.out.println(element.getKey()+":"+element.getValue());
+		}
 	}
 }
