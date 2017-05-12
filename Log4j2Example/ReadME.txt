@@ -193,6 +193,20 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
 		 ${date:YYYY}  这个也是不用设置也能用，引用的是当前的时间，带格式化的。
 		 $(env:系统环境变量名}  这个引用的就是系统环境变量。啥，什么叫系统环境变量？就是安装jdk时设置的JAVA_HOME。那就是环境变量
 		 $(sys:属性名}   引用的就是系统属性，通过System.getProperties();可以获取当前系统的所有属性。
+		 $(java:key}  key的情况有下列几种
+		 		version ==》Java version 1.7.0_67
+		 		runtime==》Java(TM) SE Runtime Environment (build 1.7.0_67-b01) from Oracle Corporation
+				vm==》Java HotSpot(TM) 64-Bit Server VM (build 24.65-b04, mixed mode)
+				os==》Windows 7 6.1 Service Pack 1, architecture: amd64-64
+				locale==》default locale: en_US, platform encoding: Cp1252（硬件信息）
+				hw===》processors: 4, architecture: amd64-64, instruction sets: amd64（硬件信息）
+				
+
+				
+				
+				
+				
+		 		
 		 
     23:过滤器，之前好像讲过了，但是讲的只是利用信息等级来进行信息的过滤。其实还有一种，就是利用第9点所说的标记来进行信息过滤
     大概配置是酱紫的：
@@ -262,17 +276,54 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
       27：web程序使用log4j2
       			在web程序使用log4j2时，必须非常小心，在容器关闭或者web应用程序取消部署时，都要把资源正确关闭：关闭数据库连接，文件关闭
       			这是因为web环境的类加载器性质，log无法以正常方式清理资源。
+      			在servlct2.5版本的应用程序：
       			首先，你要加log4j2的web模块依赖.
-      			然后可以选择在web.xml上用log4jConfiguration 指定一个配置文件路径，或者将log4j2的配置文件放到web-inf文件夹内。
-      			但是要注意，文件名必须起为log4j2开头。
-      			PS：log4j2只能工作在servlct3.0或者更加新的web应用程序。当应用部署或者取消部署时都能自动启动
+      			然后可以选择在web.xml上用log4jConfiguration 指定一个配置文件路径
+      				<context-param>
+						<param-name >log4jConfiguration</param-name>
+						<param-value>file:///E:\log4j2.xml</param-value>
+					</context-param>
+      			最后配置一个监听器，监听应web容器启动时加载配置文件
+      				<listener>  
+    					<listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>  
+					</listener> 
+      			OK，搞定，这样子，你的应用程序就可以正常启用log4j2来记录日志了！
+      			其实官网说还需要配置一下过滤器。但我配置和不配置感觉也没什么不同
+      			配置如下：
+      			<filter>
+		        	<filter-name>log4jServletFilter</filter-name>
+		        	<filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+		  	    </filter>
+		   	 	<filter-mapping>
+		        		<filter-name>log4jServletFilter</filter-name>
+		        		<url-pattern>/*</url-pattern>
+		    	</filter-mapping>
+		    	他的功能是这样的
+      			1：负责web应用程序启动完毕时清除loggerContext;
+      			2:在处理请求之前设置loggercontext,处理请求后将其清除
+      			3:在web应用程序关闭时设置loggercontext。
+				大家还是加上吧
+				
+				      			
+      			另注：如果你仅仅只是配置监听器的话，那么默认log4j2会去web-inf目录下找log4j2开头的文件
+      			在servlce3.0或更高的web应用程序
+      				貌似不用配置监听器，会自动启动。然后禁用自动启动的话，就
+      				<context-param>
+        				<param-name>isLog4jAutoInitializationDisabled</param-name>
+        				<param-value>true</param-value>
+    				</context-param>
+    				然后除非禁用了log4j2的自动初始化，否则不要手动配置Log4jServletContextListener或者Log4jServletFilter。
+    				这样做会导致启动错误。
+    				具体在这种版本的web应用程序怎么配置log4j2，我也是一头雾水，一般来说我们接触到的都是2.5版本的web应用程序。。。
+      				
       			另外：Tomcat7会忽略log4j*.jar的jar文件，从而使日志记录失效。
       			如果你不幸遇到日志不生效的情况，尝试更改catalina.properties，在jarsToSkip属性中删除“log4j * .jar.
       			如果你想禁止log4j在web容器启动时自动启动，可以在web.xml做如下配置：
-      			<context-param>
-        			<param-name>isLog4jAutoInitializationDisabled</param-name>
-        			<param-value>true</param-value>
-    			</context-param>
+      			
+    			值得一提的是，这个context-param标签必须至少处在display-name标签后面，否则会报错。。。
+    			注：在servlct3.0以及上的web应用程序。
+    		28:在jsp上使用日志记录。。。我想，用的人应该很少吧。。使用方法是用log4j的标签库
+    		
       
       
       
@@ -285,10 +336,18 @@ PS:<Configuration>属性上加上monitorInterval属性可以动态加载配置文件。
 		new String(URLDecoder.decode(要转换的字符串, "utf-8")
 		施工完毕
 		
-		1：
-今天写一个webSocket的demo时，发现访问websocket的路径没有问题，但是却报404错误。
-环境是：Eclipse，tomcat7版本是8.0. jdk版本是1.8
-查找了网上的资料后，发现tomcat8其实已经有了webSocket的包。而我还是把webSocket发布到项目的lib中。
-尝试把webSocket从lib路径移除，再尝试，果然成功。
+		1：今天写一个webSocket的demo时，发现访问websocket的路径没有问题，但是却报404错误。
+			环境是：Eclipse，tomcat7版本是8.0. jdk版本是1.8
+			查找了网上的资料后，发现tomcat8其实已经有了webSocket的包。而我还是把webSocket发布到项目的lib中。
+			尝试把webSocket从lib路径移除，再尝试，果然成功。
+		2：有时候书写web.xml时会报错
+				信息如下：
+				The content of element type "web-app" must match "(icon?,display-
+				 name?,description?,distributable?,context-param*,filter*,filter-mapping*,listener*,servlet*,servlet-
+				 mapping*,session-config?,mime-mapping*,welcome-file-list?,error-page*,taglib*,resource-env-
+				 ref*,resource-ref*,security-constraint*,login-config?,security-role*,env-entry*,ejb-ref*,ejb-local-ref*)".
+				 意思就是说，这个web-app标签下面的元素顺序必须和下列元素列表匹配
+				 如果你把listener标签写在filter上面自然就会报这个错误。
+		
 
 
