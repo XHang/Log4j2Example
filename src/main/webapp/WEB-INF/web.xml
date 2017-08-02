@@ -1,0 +1,28 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+	<filter>
+        <filter-name>log4jServletFilter</filter-name>
+        <filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>log4jServletFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <listener>  
+    		<listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>  
+	</listener> 
+  <servlet>
+  	<servlet-name>ServlctExample</servlet-name>
+  	<display-name>ServlctExample</display-name>
+  	<description>log4j2web应用示例</description>
+  	<servlet-class>com.log4j2WebExample.Servlct.ServlctExample</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>ServlctExample</servlet-name>
+  	<url-pattern>/ServlctExample.do</url-pattern>
+  </servlet-mapping>
+</web-app>
