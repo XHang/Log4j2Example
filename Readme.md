@@ -304,4 +304,7 @@ Configuration元素有一个属性：packages。值为逗号分隔的包名称�
 			  <xi:include href="log4j-xinclude-appenders.xml" />
 			</configuration>
       		感觉简单的可以，就不写示例程序了。
+      		
+##  LOG日志的BUG
+1. 如果你用这样的语句`log.error(msg, exception);`来记录Throws的话 ,在windows平台上，看到的堆栈信息都是不换行的，贼难看。事实上，在linux上看就很和谐了  
     
