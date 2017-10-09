@@ -11,8 +11,8 @@
     </File>
   </Appenders>
   <Loggers>
-  	<Logger name=" com.log4j2WebExample"   level="info"   additivity="false">
-  		<AppenderRef ref="Console"/>
+  	<Logger name="com.log4j2WebExample"   level="info"   additivity="false">
+  		<AppenderRef ref="File"/>
   	</Logger>
     <Root level="info">
       <AppenderRef ref="Console"/>

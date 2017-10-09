@@ -24,6 +24,7 @@ public class ServlctExample extends HttpServlet {
 		logger.info("log输出！！！");
 		logger.info(new Date());
 		logger.info("接受到的参数是："+request.getParameter("parameter"));
+		System.out.println("当前日志记录器名字为"+logger.getName());
 		System.out.println("非日志输出！！！");
 	}
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
