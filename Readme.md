@@ -307,4 +307,7 @@ Configuration元素有一个属性：packages。值为逗号分隔的包名称�
       		
 ##  LOG日志的BUG
 1. 如果你用这样的语句`log.error(msg, exception);`来记录Throws的话 ,在windows平台上，看到的堆栈信息都是不换行的，贼难看。事实上，在linux上看就很和谐了  
+
+2. 如果在log4j2配置了两个根记录器，那么一般记录器的父记录器会引用写在最下面的根记录器
+实验结果，仅供参考
     
